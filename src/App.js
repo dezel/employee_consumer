@@ -79,7 +79,7 @@ function App() {
                           {/* <Table.HeaderCell>Active</Table.HeaderCell> */}
                           <Table.HeaderCell>Update</Table.HeaderCell>
                           <Table.HeaderCell>Add</Table.HeaderCell>
-                          <Table.HeaderCell>Delete</Table.HeaderCell>
+                          {/* <Table.HeaderCell>Delete</Table.HeaderCell> */}
                       </Table.Row>
                   </Table.Header>
                   <Table.Body>

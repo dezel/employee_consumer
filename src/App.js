@@ -47,7 +47,7 @@ function App() {
 
   const [APIData, setAPIData] = useState([]);
   useEffect(() => {
-    axios.get('http://localhost:8000/get/')    //()'https://emp-app-8gqr.onrender.com/get/'
+    axios.get('https://job-application-wjg8.onrender.com/get/')    //()'https://emp-app-8gqr.onrender.com/get/'
       .then((response) => {
         setAPIData(response.data.concat([{ "applicant_number": "", "name": "", "phone": "" }]))
         // setAPIData([{ "applicant_id": 0, "name": "", "phone": "" }])
@@ -73,12 +73,12 @@ const [search, setSearch] = useState('')
 
   function handleDelete(data) {
     console.log(data)
-    axios.delete('http://localhost:8000/delete/' + String(data.id))
+    axios.delete('https://job-application-wjg8.onrender.com/delete/' + String(data.id))
   }
 
 
   function handleSearch(){
-    axios.get('http://localhost:8000/get/'+search)    //()'https://emp-app-8gqr.onrender.com/get/'
+    axios.get('https://job-application-wjg8.onrender.com/get/'+search)    //()'https://emp-app-8gqr.onrender.com/get/'
       .then((response) => {
         console.log(response.data)
         const object_data = [] 
@@ -104,7 +104,7 @@ const [search, setSearch] = useState('')
 
     console.log(data)
 
-    axios.put('http://localhost:8000/update/', data)
+    axios.put('https://job-application-wjg8.onrender.com/update/', data)
   }
 
   const setData = (data) => {
@@ -116,7 +116,7 @@ const [search, setSearch] = useState('')
 
   function handleLogin() {
     axios.post(
-      'http://localhost:8000/login/',
+      'https://job-application-wjg8.onrender.com/login/',
       {
         password,
         username
@@ -135,7 +135,7 @@ const [search, setSearch] = useState('')
     // // console.log(data['cv'].replace('/music', ''))
     try{console.log(data['cv'])
     const bare_file = data['cv'].replace('\/media\/', '')
-    axios.post('http://localhost:8000/download/' + bare_file).then(response => {
+    axios.post('https://job-application-wjg8.onrender.com/download/' + bare_file).then(response => {
       console.log(response)
       const url = window.URL.createObjectURL(new Blob([response.data]))
       const link = document.createElement('a')
@@ -191,7 +191,7 @@ const [search, setSearch] = useState('')
     //   }
     // )
 
-    fetch('http://localhost:8000/add/', {
+    fetch('https://job-application-wjg8.onrender.com/add/', {
       method: 'POST',
       body: formData
     })

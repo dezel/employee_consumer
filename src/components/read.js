@@ -10,7 +10,7 @@ export default function Read() {
 
     const [APIData, setAPIData] = useState([]);
     useEffect(() => {
-        axios.get ('https://emp-app-8gqr.onrender.com/get/')//('http://localhost:8000/get/')
+        axios.get ('http://localhost:8000/get/')//('https://emp-app-8gqr.onrender.com/get/')
             .then((response) => {
                 setAPIData(response.data)
                 console.log(APIData)

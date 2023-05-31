@@ -1,5 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
+
 import Create from './components/create'
 import Read from './components/read';
 import Update from './components/update';
@@ -8,6 +9,21 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Button, Table, Input, Form, Checkbox } from 'semantic-ui-react'
 import { Link } from 'react-router-dom';
+
+const cors = require('cors')
+
+// axios.defaults.xsrfCookieName = 'csrftoken';
+// axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+// axios.defaults.withCredentials = true;
+
+// const client = axios.create({
+//   baseURL: "http://127.0.0.1:8000",
+//   headers: {
+//     'Content-Type': 'application/json',
+//     Accept: 'application/json',
+// }
+// });
+
 
 function App() {
   // return (
@@ -31,20 +47,28 @@ function App() {
 
   const [APIData, setAPIData] = useState([]);
   useEffect(() => {
-    axios.get('https://emp-app-8gqr.onrender.com/get/')//('http://localhost:8000/get/')
+    axios.get('http://localhost:8000/get/')    //()'https://emp-app-8gqr.onrender.com/get/'
       .then((response) => {
-        setAPIData(response.data.concat([{"id":0, "first_name": "", "last_name": " "}]))
+        setAPIData(response.data.concat([{ "applicant_number": "", "name": "", "phone": "" }]))
+        // setAPIData([{ "applicant_id": 0, "name": "", "phone": "" }])
         // setAPIData([{ "first_name": "add", "last_name": "add" }])
         console.log(APIData)
+      }).catch((response) => {
+        console.log(response)
+        setAPIData([{ "applicant_number": "", "name": "", "phone": "" }])
       })
   }, [])
 
+  const [user, setUser] = useState(false)
 
-  const [first_name, setFirstName] = useState('');
-  const [last_name, setLastName] = useState('');
-  const [department, setDepartment] = useState('')
-  const [checkbox, setCheckbox] = useState(false)
+const [search, setSearch] = useState('')
+
+  const [applicant_number, setApplicantNumber] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [cvStart, setCvStart] = useState()
+  const [checkbox, setCheckbox] = useState(false)
   const [active, setActive] = useState(false);
 
   function handleDelete(data) {
@@ -52,93 +76,214 @@ function App() {
     axios.delete('http://localhost:8000/delete/' + String(data.id))
   }
 
+
+  function handleSearch(){
+    axios.get('http://localhost:8000/get/'+search)    //()'https://emp-app-8gqr.onrender.com/get/'
+      .then((response) => {
+        console.log(response.data)
+        const object_data = [] 
+        object_data.push(response.data)
+
+        setAPIData(object_data.concat([{ "applicant_number": "", "name": "", "phone": "" }]))
+        // setAPIData([{ "applicant_number": "", "name": "", "phone": "" }].push())
+        // setAPIData([{ "applicant_id": 0, "name": "", "phone": "" }])
+        // setAPIData([{ "first_name": "add", "last_name": "add" }])
+        console.log(APIData)
+      }).catch((response) => {
+        console.log(response)
+        setAPIData([{ "applicant_number": "", "name": "", "phone": "" }])
+      })
+  }
   function handleUpdate(data) {
     // console.log(first_name, last_name, department)
-    
-    data.first_name = first_name?first_name:data.first_name
-    data.last_name = last_name?last_name:data.last_name
-    data.department = department?department:data.department
-    data.email = email?email:data.email
+
+    data.applicant_number = applicant_number ? applicant_number : data.applicant_number
+    data.name = name ? name : data.name
+    data.email = email ? email : data.email
+    data.phone = phone ? phone : data.phone
 
     console.log(data)
 
-    axios.put('https://emp-app-8gqr.onrender.com/update/', data)
+    axios.put('http://localhost:8000/update/', data)
   }
 
   const setData = (data) => {
     console.log(data)
   }
 
+  const [password, setPassword] = useState('')
+  const [username, setUsername] = useState('')
+
+  function handleLogin() {
+    axios.post(
+      'http://localhost:8000/login/',
+      {
+        password,
+        username
+      }
+    ).then(response => {
+      console.log(response.status)
+      if (response.status = 202) {
+        setUser(true)
+      }
+    })
+
+    console.log(username, password)
+  }
+
+  function handleDownload(data) {
+    // // console.log(data['cv'].replace('/music', ''))
+    try{console.log(data['cv'])
+    const bare_file = data['cv'].replace('\/media\/', '')
+    axios.post('http://localhost:8000/download/' + bare_file).then(response => {
+      console.log(response)
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      // link.setAttribute('download', 'file' + '.docx')
+      link.setAttribute('download', bare_file)
+      document.body.appendChild(link)
+      link.click()
+    })
+  }
+  catch{
+    console.log('client has no attachment')
+  }
+
+  }
+  function handleLogout() {
+    axios.post(
+      'http://127.0.0.1:8000/logout/'
+    ).then(response => {
+      console.log(response)
+      setUser(false)
+      setPassword('')
+      setUsername('')
+    }).catch(response => {
+      console.log(response)
+      setUser(false)
+      setPassword('')
+      setUsername('')
+    })
+  }
 
   function handleAdd(data) {
-    console.log(first_name, last_name, department, email, active)
-    console.log(data)
-    axios.post('https://emp-app-8gqr.onrender.com/add/',
-      {
-        first_name,
-        last_name,
-        department,
-        email,
-        active
-      }
-    )
+    // console.log(name, applicant_number, phone, email, active, cv)
+    // console.log(data)
+
+    const formData = new FormData();
+    // formData.append("name", name);
+    // cv.append("cv", cvStart);
+
+    formData.append("applicant_number", applicant_number)
+    formData.append("name", name)
+    formData.append('email', email)
+    formData.append('phone', phone)
+    formData.append('cv', cvStart)
+    console.log(formData)
+
+    for (var key of formData.entries()) {
+      console.log(key[0] + ', ' + key[1]);
+    }
+    // axios.post('http://localhost:8000/add/',               //'https://emp-app-8gqr.onrender.com/add/',
+    //   {
+    //     body: formData
+    //   }
+    // )
+
+    fetch('http://localhost:8000/add/', {
+      method: 'POST',
+      body: formData
+    })
   }
+
 
   const handleActiveChange = e => {
     console.log(e.target)
     // console.log(e.target.value)
     // console.log(e.target.checked)
   }
-  return (
-    <div>
-      <Form>
-        <input type='text' ></input>
-        <Table singleLine>
-          <Table.Header>
-            <Table.Row>
-              {/* <Table.HeaderCell>id</Table.HeaderCell> */}
-              <Table.HeaderCell>First Name</Table.HeaderCell>
-              <Table.HeaderCell>Last Name</Table.HeaderCell>
-              <Table.HeaderCell>Department</Table.HeaderCell>
-              <Table.HeaderCell>Hire Date</Table.HeaderCell>
-              <Table.HeaderCell>Email</Table.HeaderCell>
-              {/* <Table.HeaderCell>Active</Table.HeaderCell> */}
-              <Table.HeaderCell>Update</Table.HeaderCell>
-              <Table.HeaderCell>Add</Table.HeaderCell>
-              <Table.HeaderCell>Delete</Table.HeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {
-              APIData.map((data) => {
-                // console.log(APIData)
-                return (
-                  <Table.Row>
-                    {/* <Table.Cell>{data.id}</Table.Cell> */}
-                    <Table.Cell><Input type='text' defaultValue={data.first_name} onChange={(e) => (setFirstName(e.target.value))}></Input></Table.Cell>
-                    <Table.Cell><Input type='text' defaultValue={data.last_name} onChange={(e) => (setLastName(e.target.value))}></Input></Table.Cell>
-                    <Table.Cell><Input type='text' defaultValue={data.department} onChange={(e) => (setDepartment(e.target.value))} /></Table.Cell>
-                    <Table.Cell>{new Date(data.created).toDateString()}</Table.Cell>
-                    <Table.Cell><Input type='text' defaultValue={data.email} onChange={(e) => (setEmail(e.target.value))} /></Table.Cell>
-                    {/* <Table.Cell><input type='checkbox' value={data.active} onChange={(e)=>handleActiveChange(e)}/></Table.Cell> */}
-                    <Table.Cell>
-                      <Button onClick={(e) => handleUpdate(data)}>Update</Button>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Button onClick={(e) => handleAdd(data)}>Add</Button>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Button onClick={(e) => handleDelete(data)}>Delete</Button>
-                    </Table.Cell>
-                  </Table.Row>
-                )
-              })
-            }
-          </Table.Body>
-        </Table>
-      </Form>
-    </div>
-  )
-}
 
+  if (user) {
+    return (
+      <div>
+        <Form>
+          <Input onChange={(e)=>setSearch(e.target.value)} placeholder="search with id..." type='text' ></Input>
+          <Button onClick={()=>handleSearch()}><i className='ui search icon'></i></Button>
+          <Button className="ui logout icon ui right floated clearing segment" onClick={() => handleLogout()}>Logout</Button>
+          <Table singleLine>
+            <Table.Header>
+              <Table.Row>
+                {/* <Table.HeaderCell>id</Table.HeaderCell> */}
+                <Table.HeaderCell>Applicant Number</Table.HeaderCell>
+                <Table.HeaderCell>Name</Table.HeaderCell>
+                <Table.HeaderCell>Phone</Table.HeaderCell>
+                {/* <Table.HeaderCell>Hire Date</Table.HeaderCell> */}
+                <Table.HeaderCell>Email</Table.HeaderCell>
+                <Table.HeaderCell>CV</Table.HeaderCell>
+                {/* <Table.HeaderCell>Active</Table.HeaderCell> */}
+                <Table.HeaderCell>Update</Table.HeaderCell>
+                <Table.HeaderCell>Add</Table.HeaderCell>
+                <Table.HeaderCell>Delete</Table.HeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {
+                APIData.map((data) => {
+                  // console.log(APIData)
+                  return (
+                    <Table.Row>
+                      {/* <Table.Cell>{data.id}</Table.Cell> */}
+                      <Table.Cell><Input type='text' defaultValue={data.applicant_number} onChange={(e) => (setApplicantNumber(e.target.value))}></Input></Table.Cell>
+                      <Table.Cell><Input type='text' defaultValue={data.name} onChange={(e) => (setName(e.target.value))}></Input></Table.Cell>
+                      <Table.Cell><Input type='text' defaultValue={data.email} onChange={(e) => (setEmail(e.target.value))} /></Table.Cell>
+                      <Table.Cell><Input type='text' defaultValue={data.phone} onChange={(e) => (setPhone(e.target.value))} /></Table.Cell>
+                      {/* <Table.Cell>{new Date(data.created).toDateString()}</Table.Cell> */}
+                      {/* <Table.Cell><input type='checkbox' value={data.active} onChange={(e)=>handleActiveChange(e)}/></Table.Cell> */}
+                      <Table.Cell>
+                        {/* <Button as="label" type="button" htmlFor="file" data-tooltip="Upload CV"><i className='ui upload icon'></i></Button> */}
+                        <Button data-tooltip="Download CV" onClick={() => handleDownload(data)} type='button' as="label"><i className="ui download icon"></i></Button>
+                        <Input type="file" hidden onChange={(e) => (setCvStart(e.target.files[0]))} id="file"></Input>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Button onClick={(e) => handleUpdate(data)}><i className="ui refresh icon"></i>Update</Button>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Button onClick={(e) => handleAdd(data)}><i className="ui plus icon"></i>Add</Button>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Button onClick={(e) => handleDelete(data)}><i className="ui minus icon"></i>Delete</Button>
+                      </Table.Cell>
+                    </Table.Row>
+                  )
+                })
+              }
+            </Table.Body>
+          </Table>
+        </Form>
+      </div>
+    )
+  } else {
+    return (
+      <div>
+        <Form className="create-form">
+          <Form.Group>
+            <Form.Field>
+              <label>Username</label>
+              <Input onChange={(e) => setUsername(e.target.value)} placeholder='Username' />
+            </Form.Field>
+            <br>
+            </br>
+            <Form.Field>
+              <label>Password</label>
+              <Input placeholder='Password' onChange={(e) => setPassword(e.target.value)} type='password' />
+            </Form.Field>
+            <Button type='submit' onClick={() => handleLogin()}>Login</Button>
+          </Form.Group>
+        </Form>
+
+      </div>
+    )
+  }
+}
 export default App;
